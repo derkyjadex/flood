@@ -3,20 +3,23 @@ module Main exposing (..)
 import Html exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
+import Svg.Events exposing (..)
 
 
 type alias Model =
     { towers : List Int
+    , buckets : List Int
     }
 
 
 type Msg
-    = Tick
+    = Rain Int
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { towers = [ 8, 5, 2, 7, 3, 1, 8, 6, 5, 9 ]
+      , buckets = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
       }
     , Cmd.none
     )
@@ -34,9 +37,12 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    svg [ width "500", height "500" ]
+    svg
+        [ width "500"
+        , height "500"
+        ]
         (List.concat
-            [ viewSky, viewTowers model ]
+            [ viewSky, viewTowers model, viewBuckets model ]
         )
 
 
@@ -56,20 +62,43 @@ viewTowers model =
     (List.map2
         (\i h ->
             let
-                foo =
+                top =
                     h * 50
             in
                 rect
                     [ width "50"
-                    , height (toString foo)
+                    , height (toString top)
                     , x (toString (i * 50))
-                    , y (toString (500 - foo))
+                    , y (toString (500 - top))
                     , fill "grey"
+                    , onClick (Rain i)
                     ]
                     []
         )
         (List.range 0 (List.length model.towers))
         model.towers
+    )
+
+
+viewBuckets model =
+    (List.map3
+        (\i a b ->
+            let
+                bottom =
+                    a * 50
+            in
+                rect
+                    [ width "50"
+                    , height (toString (b * 50))
+                    , x (toString (i * 50))
+                    , y (toString (500 - bottom - (b * 50)))
+                    , fill "lightBlue"
+                    ]
+                    []
+        )
+        (List.range 0 (List.length model.towers))
+        model.towers
+        model.buckets
     )
 
 
