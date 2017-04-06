@@ -22,9 +22,9 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { towers = Array.fromList [ 8, 5, 2, 7, 3, 1, 8, 6, 5, 9 ]
-      , buckets = Array.fromList [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-      , clouds = Array.fromList <| List.repeat 10 False
+    ( { towers = Array.fromList [ 8, 5, 2, 7, 3, 1, 8, 6, 5, 9, 4, 2, 8, 2, 6 ]
+      , buckets = Array.fromList <| List.repeat 15 0
+      , clouds = Array.fromList <| List.repeat 15 False
       }
     , Cmd.none
     )
@@ -144,8 +144,8 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     svg
-        [ width "500"
-        , height "500"
+        [ width "750"
+        , height "750"
         ]
         (List.concat
             [ viewSky, viewTowers model, viewBuckets model, viewClouds model ]
@@ -155,8 +155,8 @@ view model =
 viewSky : List (Svg Msg)
 viewSky =
     [ rect
-        [ width "500"
-        , height "500"
+        [ width "750"
+        , height "750"
         , x "0"
         , y "0"
         , fill "orange"
@@ -177,7 +177,7 @@ viewTowers model =
                     [ width "50"
                     , height (toString top)
                     , x (toString (i * 50))
-                    , y (toString (500 - top))
+                    , y (toString (750 - top))
                     , fill "grey"
                     , onClick (Rain i)
                     ]
@@ -200,7 +200,7 @@ viewBuckets model =
                     [ width "50"
                     , height (toString (b * 50))
                     , x (toString (i * 50))
-                    , y (toString (500 - bottom - (b * 50)))
+                    , y (toString (750 - bottom - (b * 50)))
                     , fill "lightBlue"
                     ]
                     []
@@ -228,7 +228,7 @@ viewClouds model =
                     else
                         "none"
             in
-                g []
+                g [ onClick (Rain i) ]
                     [ ellipse
                         [ rx "50"
                         , ry (toString h)
