@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Array exposing (..)
 import Html exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -7,8 +8,8 @@ import Svg.Events exposing (..)
 
 
 type alias Model =
-    { towers : List Int
-    , buckets : List Int
+    { towers : Array Int
+    , buckets : Array Int
     }
 
 
@@ -18,8 +19,8 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { towers = [ 8, 5, 2, 7, 3, 1, 8, 6, 5, 9 ]
-      , buckets = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+    ( { towers = Array.fromList [ 8, 5, 2, 7, 3, 1, 8, 6, 5, 9 ]
+      , buckets = Array.fromList [ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ]
       }
     , Cmd.none
     )
@@ -27,7 +28,16 @@ init =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        Rain i ->
+            case Array.get i model.buckets of
+                Just h ->
+                    ( { model | buckets = Array.set i (h + 1) model.buckets }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -58,6 +68,7 @@ viewSky =
     ]
 
 
+viewTowers : Model -> List (Svg Msg)
 viewTowers model =
     (List.map2
         (\i h ->
@@ -75,11 +86,12 @@ viewTowers model =
                     ]
                     []
         )
-        (List.range 0 (List.length model.towers))
-        model.towers
+        (List.range 0 (Array.length model.towers))
+        (Array.toList model.towers)
     )
 
 
+viewBuckets : Model -> List (Svg Msg)
 viewBuckets model =
     (List.map3
         (\i a b ->
@@ -96,9 +108,9 @@ viewBuckets model =
                     ]
                     []
         )
-        (List.range 0 (List.length model.towers))
-        model.towers
-        model.buckets
+        (List.range 0 (Array.length model.towers))
+        (Array.toList model.towers)
+        (Array.toList model.buckets)
     )
 
 
