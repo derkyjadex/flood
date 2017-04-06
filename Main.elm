@@ -62,7 +62,7 @@ rain model =
 rainCloud : Int -> Model -> Model
 rainCloud i model =
     if getCloud i model then
-        fillBucket i 0.05 model
+        fillBucket i 0.08 model
     else
         model
 
@@ -221,15 +221,41 @@ viewClouds model =
                         20
                     else
                         0
+
+                s =
+                    if c then
+                        "skyBlue"
+                    else
+                        "none"
             in
-                ellipse
-                    [ rx "50"
-                    , ry (toString h)
-                    , cx (toString (25 + i * 50))
-                    , cy "0"
-                    , fill "darkGrey"
+                g []
+                    [ ellipse
+                        [ rx "50"
+                        , ry (toString h)
+                        , cx (toString (25 + i * 50))
+                        , cy "0"
+                        , fill "darkGrey"
+                        ]
+                        []
+                    , line
+                        [ x1 (toString (15 + i * 50))
+                        , y1 "10"
+                        , x2 (toString (25 + i * 50))
+                        , y2 "30"
+                        , stroke s
+                        , strokeWidth "5"
+                        ]
+                        []
+                    , line
+                        [ x1 (toString (35 + i * 50))
+                        , y1 "10"
+                        , x2 (toString (45 + i * 50))
+                        , y2 "30"
+                        , stroke s
+                        , strokeWidth "5"
+                        ]
+                        []
                     ]
-                    []
         )
         (List.range 0 (Array.length model.clouds))
         (Array.toList model.clouds)
