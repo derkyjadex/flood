@@ -23,7 +23,7 @@ type Msg
 init : ( Model, Cmd Msg )
 init =
     ( { towers = Array.fromList [ 8, 5, 2, 7, 3, 1, 8, 6, 5, 9 ]
-      , buckets = Array.fromList [ 0, 0, 0.2, 0, 0, 1, 0, 0, 0, 0 ]
+      , buckets = Array.fromList [ 0, 5, 5, 0, 5, 5, 5, 5, 0, 0 ]
       }
     , Cmd.none
     )
@@ -58,73 +58,49 @@ flow model =
 
 flowBucket : Int -> Model -> Model
 flowBucket i model =
-    case ( getHeights (i - 1) model, getHeights i model, getHeights (i + 1) model ) of
-        ( Just ( lt, lb ), Just ( t, b ), Just ( rt, rb ) ) ->
-            if b < 0.2 then
-                model
+    let
+        ( lt, lb ) =
+            getHeights (i - 1) model
+
+        ( t, b ) =
+            getHeights i model
+
+        ( rt, rb ) =
+            getHeights (i + 1) model
+
+        lAmount =
+            if t + b > lt + lb then
+                Basics.min 0.05 (b / 3)
             else
-                let
-                    lAmount =
-                        if t + b > lt + lb then
-                            0.1
-                        else
-                            0
+                0
 
-                    rAmount =
-                        if t + b > rt + rb then
-                            0.1
-                        else
-                            0
-                in
-                    fillBucket i -(lAmount + rAmount) model
-                        |> fillBucket (i - 1) lAmount
-                        |> fillBucket (i + 1) rAmount
-
-        ( Just ( lt, lb ), Just ( t, b ), Nothing ) ->
-            if b < 0.2 then
-                model
+        rAmount =
+            if t + b > rt + rb then
+                Basics.min 0.05 (b / 3)
             else
-                let
-                    lAmount =
-                        if t + b > lt + lb then
-                            0.1
-                        else
-                            0
-                in
-                    fillBucket i -(lAmount) model
-                        |> fillBucket (i - 1) lAmount
-
-        ( Nothing, Just ( t, b ), Just ( rt, rb ) ) ->
-            if b < 0.2 then
-                model
-            else
-                let
-                    rAmount =
-                        if t + b > rt + rb then
-                            0.1
-                        else
-                            0
-                in
-                    fillBucket i -(rAmount) model
-                        |> fillBucket (i + 1) rAmount
-
-        _ ->
+                0
+    in
+        if b < 0 then
             model
+        else
+            fillBucket i -(lAmount + rAmount) model
+                |> fillBucket (i - 1) lAmount
+                |> fillBucket (i + 1) rAmount
 
 
-getHeights : Int -> Model -> Maybe ( Float, Float )
+getHeights : Int -> Model -> ( Float, Float )
 getHeights i model =
     case ( Array.get i model.towers, Array.get i model.buckets ) of
         ( Just t, Just b ) ->
-            Just ( t, b )
+            ( t, b )
 
         _ ->
-            Nothing
+            ( 100000, 0 )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    every (200 * millisecond) (\_ -> Tick)
+    every (100 * millisecond) (\_ -> Tick)
 
 
 view : Model -> Html Msg
