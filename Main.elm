@@ -6,12 +6,12 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (..)
 import Time exposing (..)
-import Debug
 
 
 type alias Model =
     { towers : Array Float
     , buckets : Array Float
+    , clouds : Array Bool
     }
 
 
@@ -23,7 +23,8 @@ type Msg
 init : ( Model, Cmd Msg )
 init =
     ( { towers = Array.fromList [ 8, 5, 2, 7, 3, 1, 8, 6, 5, 9 ]
-      , buckets = Array.fromList [ 0, 5, 5, 0, 5, 5, 5, 5, 0, 0 ]
+      , buckets = Array.fromList [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+      , clouds = Array.fromList <| List.repeat 10 False
       }
     , Cmd.none
     )
@@ -33,10 +34,12 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick ->
-            ( flow model, Cmd.none )
+            ( (rain >> flow) model
+            , Cmd.none
+            )
 
         Rain i ->
-            ( fillBucket i 0.2 model, Cmd.none )
+            ( toggleCloud i model, Cmd.none )
 
 
 fillBucket : Int -> Float -> Model -> Model
@@ -47,6 +50,21 @@ fillBucket i amount model =
 
         Nothing ->
             model
+
+
+rain : Model -> Model
+rain model =
+    List.foldl rainCloud
+        model
+        (List.range 0 (Array.length model.clouds))
+
+
+rainCloud : Int -> Model -> Model
+rainCloud i model =
+    if getCloud i model then
+        fillBucket i 0.05 model
+    else
+        model
 
 
 flow : Model -> Model
@@ -98,6 +116,26 @@ getHeights i model =
             ( 100000, 0 )
 
 
+getCloud : Int -> Model -> Bool
+getCloud i model =
+    case Array.get i model.clouds of
+        Just c ->
+            c
+
+        Nothing ->
+            False
+
+
+toggleCloud : Int -> Model -> Model
+toggleCloud i model =
+    case Array.get i model.clouds of
+        Just c ->
+            { model | clouds = Array.set i (not c) model.clouds }
+
+        Nothing ->
+            model
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     every (100 * millisecond) (\_ -> Tick)
@@ -110,7 +148,7 @@ view model =
         , height "500"
         ]
         (List.concat
-            [ viewSky, viewTowers model, viewBuckets model ]
+            [ viewSky, viewTowers model, viewBuckets model, viewClouds model ]
         )
 
 
@@ -170,6 +208,31 @@ viewBuckets model =
         (List.range 0 (Array.length model.towers))
         (Array.toList model.towers)
         (Array.toList model.buckets)
+    )
+
+
+viewClouds : Model -> List (Svg Msg)
+viewClouds model =
+    (List.map2
+        (\i c ->
+            let
+                h =
+                    if c then
+                        20
+                    else
+                        0
+            in
+                ellipse
+                    [ rx "50"
+                    , ry (toString h)
+                    , cx (toString (25 + i * 50))
+                    , cy "0"
+                    , fill "darkGrey"
+                    ]
+                    []
+        )
+        (List.range 0 (Array.length model.clouds))
+        (Array.toList model.clouds)
     )
 
 
