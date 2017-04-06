@@ -9,7 +9,7 @@ import Svg.Events exposing (..)
 
 type alias Model =
     { towers : Array Int
-    , buckets : Array Int
+    , buckets : Array Float
     }
 
 
@@ -20,7 +20,7 @@ type Msg
 init : ( Model, Cmd Msg )
 init =
     ( { towers = Array.fromList [ 8, 5, 2, 7, 3, 1, 8, 6, 5, 9 ]
-      , buckets = Array.fromList [ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ]
+      , buckets = Array.fromList [ 0, 0, 0.2, 0, 0, 1, 0, 0, 0, 0 ]
       }
     , Cmd.none
     )
@@ -32,7 +32,7 @@ update msg model =
         Rain i ->
             case Array.get i model.buckets of
                 Just h ->
-                    ( { model | buckets = Array.set i (h + 1) model.buckets }
+                    ( { model | buckets = Array.set i (h + 0.2) model.buckets }
                     , Cmd.none
                     )
 
